@@ -1,16 +1,94 @@
 ---
 title: "HW 03"
-author: "INSERT YOUR NAME HERE"
+author: "Nilotpal Rajbongshi"
 format:
   html:
     embed-resources: true
 toc: true
+---execute:
+  warning: false
+  error: false
+  message: false
 ---
+
+## Setup
+
+```{r setup}
+if (!require("pacman")) 
+  install.packages("pacman")
+
+# use this line for installing/loading
+pacman::p_load(tidyverse,
+               ggimage,
+               ggtext,
+               cowplot)
+
+devtools::install_github("tidyverse/dsbox")
+```
 
 ## 1 - Du Bois challenge.
 
 ```{r}
 #| label: label-me-1
+income_data <- read_csv("data/income.csv") %>%
+  rename(income_class = Class) %>%
+  mutate(income_class = factor(income_class, levels = rev(unique(income_class))))
+
+income_long <- income_data %>%
+  pivot_longer(cols = c(Rent, Food, Clothes, Tax, Other),
+               names_to = "category", values_to = "percent")
+
+income_long$category <- factor(income_long$category,
+                               levels = c("Other", "Tax", "Clothes", "Food", "Rent"))
+
+category_colors <- c(
+  Rent = "#161213",
+  Food = "#a08294", 
+  Clothes = "#d78879",   
+  Tax = "#D3D3D3",      
+  Other = "#ddead1"     
+)
+
+stacked_bar <- ggplot(income_long, aes(x = percent, y = income_class, fill = category)) +
+  geom_col(color = "black", size = 0.3) +
+  
+  geom_text(
+    aes(label = paste0(percent, "%"), color = category),
+    position = position_stack(vjust = 0.5),
+    size = 3.2,
+    family = "Helvetica"
+  ) +
+  scale_color_manual(
+    values = c("Rent" = "white", "Food" = "black", "Clothes" = "black", "Tax" = "black", "Other" = "black"),
+    guide = "none"
+  ) +
+
+  scale_fill_manual(values = category_colors,
+                    breaks = c("Rent", "Food", "Clothes", "Tax", "Other"),
+                    labels = c("Rent", "Food", "Clothes", "Taxes", "Other Expenses & Savings"),
+                    name = NULL) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 100),
+                     labels = function(x) paste0(x, "%")) +
+  labs(x = NULL, y = NULL) +
+  theme_minimal(base_family = "Helvetica") +
+  theme(
+    panel.grid = element_blank(),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    plot.background = element_rect(fill = "transparent", color = NA),
+    axis.text.x = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.y = element_text(face = "bold", size = 10),
+    legend.position = "top",
+    legend.justification = "left"
+  )
+
+background_path <- "images/parchment.png"
+
+final_plot <- ggdraw() +
+  draw_image(background_path, scale = 3, x = 0, y = 0) +
+  draw_plot(stacked_bar, x = 0, y = 0, width = 1, height = 1)
+
+print(final_plot)
 
 ```
 
