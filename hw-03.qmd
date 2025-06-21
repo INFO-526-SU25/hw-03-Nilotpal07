@@ -19,9 +19,13 @@ if (!require("pacman"))
 
 # use this line for installing/loading
 pacman::p_load(tidyverse,
+               ggplot2,
+               scales,
                ggimage,
                ggtext,
-               cowplot)
+               cowplot,
+               forcats,
+               stringr)
 
 devtools::install_github("tidyverse/dsbox")
 ```
@@ -36,7 +40,8 @@ income_data <- read_csv("data/income.csv") %>%
 
 income_long <- income_data %>%
   pivot_longer(cols = c(Rent, Food, Clothes, Tax, Other),
-               names_to = "category", values_to = "percent")
+               names_to = "category", values_to = "percent") %>%
+filter(percent > 0.5) 
 
 income_long$category <- factor(income_long$category,
                                levels = c("Other", "Tax", "Clothes", "Food", "Rent"))
@@ -45,7 +50,7 @@ category_colors <- c(
   Rent = "#161213",
   Food = "#a08294", 
   Clothes = "#d78879",   
-  Tax = "#D3D3D3",      
+  Tax = "#8e9aaf",      
   Other = "#ddead1"     
 )
 
@@ -55,7 +60,7 @@ stacked_bar <- ggplot(income_long, aes(x = percent, y = income_class, fill = cat
   geom_text(
     aes(label = paste0(percent, "%"), color = category),
     position = position_stack(vjust = 0.5),
-    size = 3.2,
+    size = 2.8,
     family = "Helvetica"
   ) +
   scale_color_manual(
@@ -94,14 +99,161 @@ print(final_plot)
 
 ## 2 - COVID survey - interpret
 
-```{r}
-#| label: label-me-2
 
-```
 
 ## 3 - COVID survey - reconstruct
+```{r, fig.width=15, fig.height=10}
+#| label: COVID survey - reconstruct
 
+# ─────────────────────────────────────────────────────────
+# Load CSV  &  Clean raw data
+# ─────────────────────────────────────────────────────────
+covid_survey <- read_csv("data/covid-survey.csv", skip = 1)
 
+# Confirm the shape
+dim(covid_survey)
+
+# drop rows where EVERYTHING except response_id is NA
+covid_survey <- covid_survey %>%
+  filter(!if_all(-response_id, is.na))
+
+# Confirm the shape again
+dim(covid_survey)
+
+# recode explanatory variables
+covid_survey <- covid_survey %>%
+  mutate(
+    exp_already_vax = recode(exp_already_vax, `0` = "No", `1` = "Yes"),
+    exp_flu_vax = recode(exp_flu_vax, `0` = "No", `1` = "Yes"),
+    exp_profession = recode(exp_profession, `0` = "Medical", `1` = "Nursing"),
+    exp_gender = recode(exp_gender, `0` = "Male", `1` = "Female", `3` = "Non-binary third gender", `4` = "Prefer not to say"),
+    exp_race = recode(exp_race, `1` = "American Indian / Alaskan Native", `2` = "Asian", `3` = "Black / African American", `4` = "Native Hawaiian / Other Pacific Islander", `5` = "White"),
+    exp_ethnicity = recode(exp_ethnicity, `1` = "Hispanic / Latino", `2` = "Non-Hispanic/Non-Latino"),
+    exp_age_bin = recode(exp_age_bin, `0` = "<20", `20` = "21-25", `25` = "26-30", `30` = ">30")
+  )
+
+dim(covid_survey)
+
+# ─────────────────────────────────────────────────────────
+# Pivot to long & summarise (mean, 10th, 90th)
+# ─────────────────────────────────────────────────────────
+covid_survey_longer <- covid_survey %>%
+  pivot_longer(
+    cols = starts_with("exp_"),
+    names_to = "explanatory",
+    values_to = "explanatory_value"
+  ) %>%
+  filter(!is.na(explanatory_value)) %>%
+  pivot_longer(
+    cols = starts_with("resp_"),
+    names_to = "response",
+    values_to = "response_value"
+  )
+
+covid_survey_longer
+
+covid_survey_summary_stats_by_group <- covid_survey_longer %>%
+  group_by(explanatory, explanatory_value, response) %>%
+  summarise(
+    mean = mean(response_value, na.rm = TRUE),
+    low = quantile(response_value, 0.10, na.rm = TRUE),
+    high = quantile(response_value, 0.90, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+covid_survey_summary_stats_by_group
+
+covid_survey_summary_stats_all <- covid_survey_longer %>%
+  group_by(response) %>%
+  summarise(
+    mean = mean(response_value, na.rm = TRUE),
+    low = quantile(response_value, 0.10, na.rm = TRUE),
+    high = quantile(response_value, 0.90, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    explanatory = "All",
+    explanatory_value = ""
+  )
+
+covid_survey_summary_stats_all
+
+covid_survey_summary_stats <- bind_rows(
+  covid_survey_summary_stats_all,
+  covid_survey_summary_stats_by_group
+)
+
+covid_survey_summary_stats
+
+# ─────────────────────────────────────────────────────────
+# Facet-strip label vectors
+# ─────────────────────────────────────────────────────────
+response_labels <- c(
+  resp_safety = "Based on my understanding,\nI believe the vaccine is safe",
+  resp_confidence_science = "I am confident in the\nscientific vetting process\nfor the new COVID vaccines",
+  resp_feel_safe_at_work = "Getting the vaccine\nwill make me feel safer at work",
+  resp_will_recommend = "I will recommend the vaccine\nto family, friends,\nand community members",
+  resp_trust_info = "I trust the information that\nI have received about the vaccines",
+  resp_concern_safety = "I am concerned about the\nsafety and side effects\nof the vaccine"
+)
+
+explanatory_labels <- c(
+  exp_age_bin = "Age",
+  exp_gender = "Gender",
+  exp_race = "Race",
+  exp_ethnicity = "Ethnicity",
+  exp_profession = "Profession",
+  exp_already_vax = "Had COVID vaccine",
+  exp_flu_vax = "Had flu vaccine this year",
+  All = "All"
+)
+
+options(repr.plot.width  = 18,
+        repr.plot.height = 15)
+
+covid_survey_summary_stats <- covid_survey_summary_stats %>% 
+  group_by(explanatory) %>% 
+  mutate(explanatory_value = fct_rev(fct_inorder(explanatory_value))) %>% 
+  ungroup()
+
+resp_lab_wrapped <- setNames(
+  str_wrap(unname(response_labels), width = 25),
+  names(response_labels)
+)
+
+# ─────────────────────────────────────────────────────────
+# Final faceted plot
+# ─────────────────────────────────────────────────────────
+ggplot(covid_survey_summary_stats,
+       aes(x = mean, y = explanatory_value)) +
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = low, xmax = high), height = .15) +
+  facet_grid(
+    explanatory ~ response,
+    scales  = "free_y",
+    space   = "free_y",
+    labeller = labeller(
+      response    = resp_lab_wrapped,
+      explanatory = explanatory_labels
+    )
+  ) +                         
+  scale_x_continuous(breaks = 1:5) +
+  coord_cartesian(xlim = c(1, 5)) +
+  theme_minimal(base_size = 9) +
+  theme(
+    strip.background   = element_rect(fill = "gray90", colour = "black"),
+    strip.text.y       = element_text(angle = 0, hjust = 0),
+    axis.title.y       = element_blank(),
+    axis.title.x = element_text(colour = "black"), 
+    plot.margin        = margin(12, 12, 12, 12),
+    panel.grid.major   = element_blank(),
+    panel.grid.minor   = element_blank()
+  ) +
+  labs(
+    x = "Mean Likert score\n(Error bars show 10th–90th percentiles)"
+  )
+
+```
 ## 4 - COVID survey - re-reconstruct
 
 ## 5 - COVID survey - another view
