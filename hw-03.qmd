@@ -35,7 +35,7 @@ devtools::install_github("tidyverse/dsbox")
 
 ```{r}
 #| label: label-me-1
-income_data <- read_csv("data/income.csv") %>%
+income_data <- read_csv("data/income.csv", show_col_types = FALSE) %>%
   rename(income_class = Class) %>%
   mutate(income_class = factor(income_class, levels = rev(unique(income_class))))
 
@@ -100,9 +100,13 @@ print(final_plot)
 
 ## 2 - COVID survey - interpret
 
+1. One of the clearest patterns in the visualization emerges when comparing individuals based on their prior vaccination status. Respondents who had already received the COVID-19 vaccine or the flu vaccine that year consistently showed more favorable attitudes toward the COVID vaccine. Their mean Likert scores were significantly lower closer to “Strongly Agree” across multiple response statements, including believing the vaccine is safe, trusting the information received, and being willing to recommend it to others. The intuitive expectations here are individuals who voluntarily received a vaccine likely have greater trust in medical systems and fewer concerns about safety, suggesting prior vaccination behavior is a strong predictor of vaccine acceptance.
 
+2. Another important comparison is between medical and nursing students. Medical students generally showed higher levels of confidence in the safety and development process of the COVID vaccine. Medical students had lower mean scores than their nursing counterparts, indicating stronger agreement. This too aligns with expectations, medical students typically receive more intensive training in topics which may enhance their trust in the science behind vaccines and reduce hesitation compared to students in nursing programs.
 
-## 3 - COVID survey - reconstruct
+3. A more surprising trend appears when looking at age groups and their concerns about vaccine side effects. Contrary to the expectation that older individuals might be more cautious due to higher health risks, the visualization shows that younger respondents—particularly those under 25—expressed greater concern about the safety and side effects of the COVID vaccine. Their responses had higher mean Likert scores for the corresponding statement, indicating more disagreement. This pattern may reflect the lack of awareness, trust in the system or generational differences in risk perception, suggesting that public health communication may need to be prepared for younger generation.
+
+## 3 - COVID survey - reconstruct with 10th–90th percentiles
 ```{r, fig.width=15, fig.height=10}
 #| label: COVID survey - reconstruct
 
@@ -255,7 +259,7 @@ ggplot(covid_survey_summary_stats,
   )
 
 ```
-## 4 - COVID survey - re-reconstruct
+## 4 - COVID survey - re-reconstruct with 25th-75th percentile
 ```{r, fig.width=15, fig.height=10}
 
 #| label: COVID survey - reconstruct
@@ -497,3 +501,8 @@ stacked_plot <- ggplot(likert_summary, aes(x = fct_rev(question), y = pct, fill 
                   legend.position = "top")
   )
 ```
+a. A diverging bar chart visualizing responses to six COVID-19 vaccine-related survey questions. Each question appears along the y-axis, and horizontal bars diverge left for positive sentiments and right for negative sentiments. Green shades represent agreement, yellow indicates neutrality, and red/orange shades represent disagreement. Most responses cluster toward the agreement side, especially for questions about vaccine safety, confidence in science, and recommendations to others.
+
+b. A 100% stacked bar chart presenting the same six survey questions, with each bar representing the full distribution of responses. Green segments dominate most bars, especially for questions related to safety, trust, and recommendation, while disagreement is most notable in the question regarding concern about side effects.
+
+c. The diverging bar chart emphasizes polarity—how far responses deviate from neutrality—making it easier to see which questions received strong agreement or disagreement. In contrast, the 100% bar chart emphasizes the distribution of responses within each question, making it ideal for comparing proportions across questions on the same scale.

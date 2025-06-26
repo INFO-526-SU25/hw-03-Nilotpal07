@@ -3091,8 +3091,8 @@ vertical-align: -.125em;
   <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
   <li><a href="#du-bois-challenge." id="toc-du-bois-challenge." class="nav-link" data-scroll-target="#du-bois-challenge.">1 - Du Bois challenge.</a></li>
   <li><a href="#covid-survey---interpret" id="toc-covid-survey---interpret" class="nav-link" data-scroll-target="#covid-survey---interpret">2 - COVID survey - interpret</a></li>
-  <li><a href="#covid-survey---reconstruct" id="toc-covid-survey---reconstruct" class="nav-link" data-scroll-target="#covid-survey---reconstruct">3 - COVID survey - reconstruct</a></li>
-  <li><a href="#covid-survey---re-reconstruct" id="toc-covid-survey---re-reconstruct" class="nav-link" data-scroll-target="#covid-survey---re-reconstruct">4 - COVID survey - re-reconstruct</a></li>
+  <li><a href="#covid-survey---reconstruct-with-10th90th-percentiles" id="toc-covid-survey---reconstruct-with-10th90th-percentiles" class="nav-link" data-scroll-target="#covid-survey---reconstruct-with-10th90th-percentiles">3 - COVID survey - reconstruct with 10th–90th percentiles</a></li>
+  <li><a href="#covid-survey---re-reconstruct-with-25th-75th-percentile" id="toc-covid-survey---re-reconstruct-with-25th-75th-percentile" class="nav-link" data-scroll-target="#covid-survey---re-reconstruct-with-25th-75th-percentile">4 - COVID survey - re-reconstruct with 25th-75th percentile</a></li>
   <li><a href="#covid-survey---another-view" id="toc-covid-survey---another-view" class="nav-link" data-scroll-target="#covid-survey---another-view">5 - COVID survey - another view</a></li>
   </ul>
 </nav>
@@ -3153,78 +3153,69 @@ vertical-align: -.125em;
 <section id="du-bois-challenge." class="level2">
 <h2 class="anchored" data-anchor-id="du-bois-challenge.">1 - Du Bois challenge.</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>income_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/income.csv&quot;</span>) <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>income_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/income.csv&quot;</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">income_class =</span> Class) <span class="sc">%&gt;%</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">income_class =</span> <span class="fu">factor</span>(income_class, <span class="at">levels =</span> <span class="fu">rev</span>(<span class="fu">unique</span>(income_class))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Rows: 7 Columns: 7
-── Column specification ────────────────────────────────────────────────────────
-Delimiter: &quot;,&quot;
-chr (1): Class
-dbl (6): Average_Income, Rent, Food, Clothes, Tax, Other
-
-ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>income_long <span class="ot">&lt;-</span> income_data <span class="sc">%&gt;%</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(Rent, Food, Clothes, Tax, Other),</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">&quot;category&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;percent&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(percent <span class="sc">&gt;</span> <span class="fl">0.5</span>) </span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>income_long<span class="sc">$</span>category <span class="ot">&lt;-</span> <span class="fu">factor</span>(income_long<span class="sc">$</span>category,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                               <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Other&quot;</span>, <span class="st">&quot;Tax&quot;</span>, <span class="st">&quot;Clothes&quot;</span>, <span class="st">&quot;Food&quot;</span>, <span class="st">&quot;Rent&quot;</span>))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>category_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">Rent =</span> <span class="st">&quot;#161213&quot;</span>,</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">Food =</span> <span class="st">&quot;#a08294&quot;</span>, </span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">Clothes =</span> <span class="st">&quot;#d78879&quot;</span>,   </span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">Tax =</span> <span class="st">&quot;#8e9aaf&quot;</span>,      </span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">Other =</span> <span class="st">&quot;#ddead1&quot;</span>     </span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>stacked_bar <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(income_long, <span class="fu">aes</span>(<span class="at">x =</span> percent, <span class="at">y =</span> income_class, <span class="at">fill =</span> category)) <span class="sc">+</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">size =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">paste0</span>(percent, <span class="st">&quot;%&quot;</span>), <span class="at">color =</span> category),</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_stack</span>(<span class="at">vjust =</span> <span class="fl">0.5</span>),</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">2.8</span>,</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="st">&quot;Helvetica&quot;</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;Rent&quot;</span> <span class="ot">=</span> <span class="st">&quot;white&quot;</span>, <span class="st">&quot;Food&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>, <span class="st">&quot;Clothes&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>, <span class="st">&quot;Tax&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>, <span class="st">&quot;Other&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>),</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;none&quot;</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> category_colors,</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>                    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="st">&quot;Rent&quot;</span>, <span class="st">&quot;Food&quot;</span>, <span class="st">&quot;Clothes&quot;</span>, <span class="st">&quot;Tax&quot;</span>, <span class="st">&quot;Other&quot;</span>),</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Rent&quot;</span>, <span class="st">&quot;Food&quot;</span>, <span class="st">&quot;Clothes&quot;</span>, <span class="st">&quot;Taxes&quot;</span>, <span class="st">&quot;Other Expenses &amp; Savings&quot;</span>),</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>                    <span class="at">name =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x, <span class="st">&quot;%&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_family =</span> <span class="st">&quot;Helvetica&quot;</span>) <span class="sc">+</span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;transparent&quot;</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;transparent&quot;</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">size =</span> <span class="dv">10</span>),</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>,</span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.justification =</span> <span class="st">&quot;left&quot;</span></span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">income_class =</span> <span class="fu">factor</span>(income_class, <span class="at">levels =</span> <span class="fu">rev</span>(<span class="fu">unique</span>(income_class))))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>income_long <span class="ot">&lt;-</span> income_data <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(Rent, Food, Clothes, Tax, Other),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">&quot;category&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;percent&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(percent <span class="sc">&gt;</span> <span class="fl">0.5</span>) </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>income_long<span class="sc">$</span>category <span class="ot">&lt;-</span> <span class="fu">factor</span>(income_long<span class="sc">$</span>category,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                               <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Other&quot;</span>, <span class="st">&quot;Tax&quot;</span>, <span class="st">&quot;Clothes&quot;</span>, <span class="st">&quot;Food&quot;</span>, <span class="st">&quot;Rent&quot;</span>))</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>category_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">Rent =</span> <span class="st">&quot;#161213&quot;</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">Food =</span> <span class="st">&quot;#a08294&quot;</span>, </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">Clothes =</span> <span class="st">&quot;#d78879&quot;</span>,   </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">Tax =</span> <span class="st">&quot;#8e9aaf&quot;</span>,      </span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">Other =</span> <span class="st">&quot;#ddead1&quot;</span>     </span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>stacked_bar <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(income_long, <span class="fu">aes</span>(<span class="at">x =</span> percent, <span class="at">y =</span> income_class, <span class="at">fill =</span> category)) <span class="sc">+</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">size =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">paste0</span>(percent, <span class="st">&quot;%&quot;</span>), <span class="at">color =</span> category),</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_stack</span>(<span class="at">vjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">2.8</span>,</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="st">&quot;Helvetica&quot;</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;Rent&quot;</span> <span class="ot">=</span> <span class="st">&quot;white&quot;</span>, <span class="st">&quot;Food&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>, <span class="st">&quot;Clothes&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>, <span class="st">&quot;Tax&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>, <span class="st">&quot;Other&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">guide =</span> <span class="st">&quot;none&quot;</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> category_colors,</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>                    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="st">&quot;Rent&quot;</span>, <span class="st">&quot;Food&quot;</span>, <span class="st">&quot;Clothes&quot;</span>, <span class="st">&quot;Tax&quot;</span>, <span class="st">&quot;Other&quot;</span>),</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Rent&quot;</span>, <span class="st">&quot;Food&quot;</span>, <span class="st">&quot;Clothes&quot;</span>, <span class="st">&quot;Taxes&quot;</span>, <span class="st">&quot;Other Expenses &amp; Savings&quot;</span>),</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>                    <span class="at">name =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x, <span class="st">&quot;%&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_family =</span> <span class="st">&quot;Helvetica&quot;</span>) <span class="sc">+</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;transparent&quot;</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;transparent&quot;</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>,</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.justification =</span> <span class="st">&quot;left&quot;</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
 ℹ Please use `linewidth` instead.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>background_path <span class="ot">&lt;-</span> <span class="st">&quot;images/parchment.png&quot;</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>final_plot <span class="ot">&lt;-</span> <span class="fu">ggdraw</span>() <span class="sc">+</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">draw_image</span>(background_path, <span class="at">scale =</span> <span class="dv">3</span>, <span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">draw_plot</span>(stacked_bar, <span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>, <span class="at">width =</span> <span class="dv">1</span>, <span class="at">height =</span> <span class="dv">1</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(final_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>background_path <span class="ot">&lt;-</span> <span class="st">&quot;images/parchment.png&quot;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>final_plot <span class="ot">&lt;-</span> <span class="fu">ggdraw</span>() <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">draw_image</span>(background_path, <span class="at">scale =</span> <span class="dv">3</span>, <span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">draw_plot</span>(stacked_bar, <span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>, <span class="at">width =</span> <span class="dv">1</span>, <span class="at">height =</span> <span class="dv">1</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(final_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -3236,14 +3227,19 @@ dbl (6): Average_Income, Rent, Food, Clothes, Tax, Other
 </section>
 <section id="covid-survey---interpret" class="level2">
 <h2 class="anchored" data-anchor-id="covid-survey---interpret">2 - COVID survey - interpret</h2>
+<ol type="1">
+<li><p>One of the clearest patterns in the visualization emerges when comparing individuals based on their prior vaccination status. Respondents who had already received the COVID-19 vaccine or the flu vaccine that year consistently showed more favorable attitudes toward the COVID vaccine. Their mean Likert scores were significantly lower closer to “Strongly Agree” across multiple response statements, including believing the vaccine is safe, trusting the information received, and being willing to recommend it to others. The intuitive expectations here are individuals who voluntarily received a vaccine likely have greater trust in medical systems and fewer concerns about safety, suggesting prior vaccination behavior is a strong predictor of vaccine acceptance.</p></li>
+<li><p>Another important comparison is between medical and nursing students. Medical students generally showed higher levels of confidence in the safety and development process of the COVID vaccine. Medical students had lower mean scores than their nursing counterparts, indicating stronger agreement. This too aligns with expectations, medical students typically receive more intensive training in topics which may enhance their trust in the science behind vaccines and reduce hesitation compared to students in nursing programs.</p></li>
+<li><p>A more surprising trend appears when looking at age groups and their concerns about vaccine side effects. Contrary to the expectation that older individuals might be more cautious due to higher health risks, the visualization shows that younger respondents—particularly those under 25—expressed greater concern about the safety and side effects of the COVID vaccine. Their responses had higher mean Likert scores for the corresponding statement, indicating more disagreement. This pattern may reflect the lack of awareness, trust in the system or generational differences in risk perception, suggesting that public health communication may need to be prepared for younger generation.</p></li>
+</ol>
 </section>
-<section id="covid-survey---reconstruct" class="level2">
-<h2 class="anchored" data-anchor-id="covid-survey---reconstruct">3 - COVID survey - reconstruct</h2>
+<section id="covid-survey---reconstruct-with-10th90th-percentiles" class="level2">
+<h2 class="anchored" data-anchor-id="covid-survey---reconstruct-with-10th90th-percentiles">3 - COVID survey - reconstruct with 10th–90th percentiles</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Load CSV  &amp;  Clean raw data</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/covid-survey.csv&quot;</span>, <span class="at">skip =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Load CSV  &amp;  Clean raw data</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/covid-survey.csv&quot;</span>, <span class="at">skip =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 1121 Columns: 14
 ── Column specification ────────────────────────────────────────────────────────
@@ -3253,53 +3249,53 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm the shape</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm the shape</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1121   14</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># drop rows where EVERYTHING except response_id is NA</span></span>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># drop rows where EVERYTHING except response_id is NA</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">if_all</span>(<span class="sc">-</span>response_id, is.na))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm the shape again</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1111   14</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># recode explanatory variables</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">if_all</span>(<span class="sc">-</span>response_id, is.na))</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm the shape again</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_already_vax =</span> <span class="fu">recode</span>(exp_already_vax, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>),</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_flu_vax =</span> <span class="fu">recode</span>(exp_flu_vax, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>),</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_profession =</span> <span class="fu">recode</span>(exp_profession, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Medical&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Nursing&quot;</span>),</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_gender =</span> <span class="fu">recode</span>(exp_gender, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Male&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Female&quot;</span>, <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Non-binary third gender&quot;</span>, <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Prefer not to say&quot;</span>),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_race =</span> <span class="fu">recode</span>(exp_race, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;American Indian / Alaskan Native&quot;</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Asian&quot;</span>, <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Black / African American&quot;</span>, <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Native Hawaiian / Other Pacific Islander&quot;</span>, <span class="st">`</span><span class="at">5</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;White&quot;</span>),</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_ethnicity =</span> <span class="fu">recode</span>(exp_ethnicity, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Hispanic / Latino&quot;</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Non-Hispanic/Non-Latino&quot;</span>),</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_age_bin =</span> <span class="fu">recode</span>(exp_age_bin, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;&lt;20&quot;</span>, <span class="st">`</span><span class="at">20</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;21-25&quot;</span>, <span class="st">`</span><span class="at">25</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;26-30&quot;</span>, <span class="st">`</span><span class="at">30</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;&gt;30&quot;</span>)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1111   14</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># recode explanatory variables</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_already_vax =</span> <span class="fu">recode</span>(exp_already_vax, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>),</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_flu_vax =</span> <span class="fu">recode</span>(exp_flu_vax, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>),</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_profession =</span> <span class="fu">recode</span>(exp_profession, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Medical&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Nursing&quot;</span>),</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_gender =</span> <span class="fu">recode</span>(exp_gender, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Male&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Female&quot;</span>, <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Non-binary third gender&quot;</span>, <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Prefer not to say&quot;</span>),</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_race =</span> <span class="fu">recode</span>(exp_race, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;American Indian / Alaskan Native&quot;</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Asian&quot;</span>, <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Black / African American&quot;</span>, <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Native Hawaiian / Other Pacific Islander&quot;</span>, <span class="st">`</span><span class="at">5</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;White&quot;</span>),</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_ethnicity =</span> <span class="fu">recode</span>(exp_ethnicity, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Hispanic / Latino&quot;</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Non-Hispanic/Non-Latino&quot;</span>),</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_age_bin =</span> <span class="fu">recode</span>(exp_age_bin, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;&lt;20&quot;</span>, <span class="st">`</span><span class="at">20</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;21-25&quot;</span>, <span class="st">`</span><span class="at">25</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;26-30&quot;</span>, <span class="st">`</span><span class="at">30</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;&gt;30&quot;</span>)</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 1111   14</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Pivot to long &amp; summarise (mean, 10th, 90th)</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>covid_survey_longer <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;exp_&quot;</span>),</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;explanatory&quot;</span>,</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;explanatory_value&quot;</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(explanatory_value)) <span class="sc">%&gt;%</span></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;resp_&quot;</span>),</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;response&quot;</span>,</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;response_value&quot;</span></span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>covid_survey_longer</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Pivot to long &amp; summarise (mean, 10th, 90th)</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>covid_survey_longer <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;exp_&quot;</span>),</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;explanatory&quot;</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;explanatory_value&quot;</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(explanatory_value)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;resp_&quot;</span>),</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;response&quot;</span>,</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;response_value&quot;</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>covid_survey_longer</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 43,428 × 5
    response_id explanatory    explanatory_value response          response_value
@@ -3316,16 +3312,16 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 10           1 exp_flu_vax    Yes               resp_feel_safe_a…              1
 # ℹ 43,418 more rows</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_by_group <span class="ot">&lt;-</span> covid_survey_longer <span class="sc">%&gt;%</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(explanatory, explanatory_value, response) <span class="sc">%&gt;%</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(response_value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">low =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.10</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">high =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.90</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_by_group</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_by_group <span class="ot">&lt;-</span> covid_survey_longer <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(explanatory, explanatory_value, response) <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(response_value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">low =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.10</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">high =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.90</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_by_group</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 126 × 6
    explanatory explanatory_value response                 mean   low  high
@@ -3342,20 +3338,20 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 10 exp_age_bin 26-30             resp_safety              2.16     1     5
 # ℹ 116 more rows</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_all <span class="ot">&lt;-</span> covid_survey_longer <span class="sc">%&gt;%</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(response) <span class="sc">%&gt;%</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(response_value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">low =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.10</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">high =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.90</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">explanatory =</span> <span class="st">&quot;All&quot;</span>,</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">explanatory_value =</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_all <span class="ot">&lt;-</span> covid_survey_longer <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(response) <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(response_value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">low =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.10</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">high =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.90</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">explanatory =</span> <span class="st">&quot;All&quot;</span>,</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">explanatory_value =</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 6
   response                 mean   low  high explanatory explanatory_value
@@ -3367,12 +3363,12 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 5 resp_trust_info          1.40     1     2 All         &quot;&quot;               
 6 resp_will_recommend      1.21     1     2 All         &quot;&quot;               </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  covid_survey_summary_stats_all,</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  covid_survey_summary_stats_by_group</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  covid_survey_summary_stats_all,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  covid_survey_summary_stats_by_group</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 132 × 6
    response                 mean   low  high explanatory explanatory_value
@@ -3389,73 +3385,73 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 10 resp_safety              1.95     1     5 exp_age_bin &quot;21-25&quot;          
 # ℹ 122 more rows</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Facet-strip label vectors</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>response_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_safety =</span> <span class="st">&quot;Based on my understanding,</span><span class="sc">\n</span><span class="st">I believe the vaccine is safe&quot;</span>,</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_confidence_science =</span> <span class="st">&quot;I am confident in the</span><span class="sc">\n</span><span class="st">scientific vetting process</span><span class="sc">\n</span><span class="st">for the new COVID vaccines&quot;</span>,</span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_feel_safe_at_work =</span> <span class="st">&quot;Getting the vaccine</span><span class="sc">\n</span><span class="st">will make me feel safer at work&quot;</span>,</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_will_recommend =</span> <span class="st">&quot;I will recommend the vaccine</span><span class="sc">\n</span><span class="st">to family, friends,</span><span class="sc">\n</span><span class="st">and community members&quot;</span>,</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_trust_info =</span> <span class="st">&quot;I trust the information that</span><span class="sc">\n</span><span class="st">I have received about the vaccines&quot;</span>,</span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_concern_safety =</span> <span class="st">&quot;I am concerned about the</span><span class="sc">\n</span><span class="st">safety and side effects</span><span class="sc">\n</span><span class="st">of the vaccine&quot;</span></span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>explanatory_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_age_bin =</span> <span class="st">&quot;Age&quot;</span>,</span>
-<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_gender =</span> <span class="st">&quot;Gender&quot;</span>,</span>
-<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_race =</span> <span class="st">&quot;Race&quot;</span>,</span>
-<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_ethnicity =</span> <span class="st">&quot;Ethnicity&quot;</span>,</span>
-<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_profession =</span> <span class="st">&quot;Profession&quot;</span>,</span>
-<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_already_vax =</span> <span class="st">&quot;Had COVID vaccine&quot;</span>,</span>
-<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_flu_vax =</span> <span class="st">&quot;Had flu vaccine this year&quot;</span>,</span>
-<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">All =</span> <span class="st">&quot;All&quot;</span></span>
-<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repr.plot.width  =</span> <span class="dv">18</span>,</span>
-<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">repr.plot.height =</span> <span class="dv">15</span>)</span>
-<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats <span class="ot">&lt;-</span> covid_survey_summary_stats <span class="sc">%&gt;%</span> </span>
-<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(explanatory) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">explanatory_value =</span> <span class="fu">fct_rev</span>(<span class="fu">fct_inorder</span>(explanatory_value))) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>resp_lab_wrapped <span class="ot">&lt;-</span> <span class="fu">setNames</span>(</span>
-<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_wrap</span>(<span class="fu">unname</span>(response_labels), <span class="at">width =</span> <span class="dv">25</span>),</span>
-<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(response_labels)</span>
-<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Final faceted plot</span></span>
-<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(covid_survey_summary_stats,</span>
-<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> mean, <span class="at">y =</span> explanatory_value)) <span class="sc">+</span></span>
-<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbarh</span>(<span class="fu">aes</span>(<span class="at">xmin =</span> low, <span class="at">xmax =</span> high), <span class="at">height =</span> .<span class="dv">15</span>) <span class="sc">+</span></span>
-<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(</span>
-<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>    explanatory <span class="sc">~</span> response,</span>
-<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">scales  =</span> <span class="st">&quot;free_y&quot;</span>,</span>
-<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">space   =</span> <span class="st">&quot;free_y&quot;</span>,</span>
-<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">labeller =</span> <span class="fu">labeller</span>(</span>
-<span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a>      <span class="at">response    =</span> resp_lab_wrapped,</span>
-<span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a>      <span class="at">explanatory =</span> explanatory_labels</span>
-<span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span>                         </span>
-<span id="cb26-53"><a href="#cb26-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb26-54"><a href="#cb26-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>)) <span class="sc">+</span></span>
-<span id="cb26-55"><a href="#cb26-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">9</span>) <span class="sc">+</span></span>
-<span id="cb26-56"><a href="#cb26-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb26-57"><a href="#cb26-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.background   =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;gray90&quot;</span>, <span class="at">colour =</span> <span class="st">&quot;black&quot;</span>),</span>
-<span id="cb26-58"><a href="#cb26-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text.y       =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">0</span>, <span class="at">hjust =</span> <span class="dv">0</span>),</span>
-<span id="cb26-59"><a href="#cb26-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y       =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb26-60"><a href="#cb26-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">colour =</span> <span class="st">&quot;black&quot;</span>), </span>
-<span id="cb26-61"><a href="#cb26-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin        =</span> <span class="fu">margin</span>(<span class="dv">12</span>, <span class="dv">12</span>, <span class="dv">12</span>, <span class="dv">12</span>),</span>
-<span id="cb26-62"><a href="#cb26-62" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major   =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb26-63"><a href="#cb26-63" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor   =</span> <span class="fu">element_blank</span>()</span>
-<span id="cb26-64"><a href="#cb26-64" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb26-65"><a href="#cb26-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb26-66"><a href="#cb26-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Mean Likert score</span><span class="sc">\n</span><span class="st">(Error bars show 10th–90th percentiles)&quot;</span></span>
-<span id="cb26-67"><a href="#cb26-67" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Facet-strip label vectors</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>response_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_safety =</span> <span class="st">&quot;Based on my understanding,</span><span class="sc">\n</span><span class="st">I believe the vaccine is safe&quot;</span>,</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_confidence_science =</span> <span class="st">&quot;I am confident in the</span><span class="sc">\n</span><span class="st">scientific vetting process</span><span class="sc">\n</span><span class="st">for the new COVID vaccines&quot;</span>,</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_feel_safe_at_work =</span> <span class="st">&quot;Getting the vaccine</span><span class="sc">\n</span><span class="st">will make me feel safer at work&quot;</span>,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_will_recommend =</span> <span class="st">&quot;I will recommend the vaccine</span><span class="sc">\n</span><span class="st">to family, friends,</span><span class="sc">\n</span><span class="st">and community members&quot;</span>,</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_trust_info =</span> <span class="st">&quot;I trust the information that</span><span class="sc">\n</span><span class="st">I have received about the vaccines&quot;</span>,</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_concern_safety =</span> <span class="st">&quot;I am concerned about the</span><span class="sc">\n</span><span class="st">safety and side effects</span><span class="sc">\n</span><span class="st">of the vaccine&quot;</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>explanatory_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_age_bin =</span> <span class="st">&quot;Age&quot;</span>,</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_gender =</span> <span class="st">&quot;Gender&quot;</span>,</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_race =</span> <span class="st">&quot;Race&quot;</span>,</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_ethnicity =</span> <span class="st">&quot;Ethnicity&quot;</span>,</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_profession =</span> <span class="st">&quot;Profession&quot;</span>,</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_already_vax =</span> <span class="st">&quot;Had COVID vaccine&quot;</span>,</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_flu_vax =</span> <span class="st">&quot;Had flu vaccine this year&quot;</span>,</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">All =</span> <span class="st">&quot;All&quot;</span></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repr.plot.width  =</span> <span class="dv">18</span>,</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">repr.plot.height =</span> <span class="dv">15</span>)</span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats <span class="ot">&lt;-</span> covid_survey_summary_stats <span class="sc">%&gt;%</span> </span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(explanatory) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">explanatory_value =</span> <span class="fu">fct_rev</span>(<span class="fu">fct_inorder</span>(explanatory_value))) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a>resp_lab_wrapped <span class="ot">&lt;-</span> <span class="fu">setNames</span>(</span>
+<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_wrap</span>(<span class="fu">unname</span>(response_labels), <span class="at">width =</span> <span class="dv">25</span>),</span>
+<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(response_labels)</span>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Final faceted plot</span></span>
+<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(covid_survey_summary_stats,</span>
+<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> mean, <span class="at">y =</span> explanatory_value)) <span class="sc">+</span></span>
+<span id="cb24-42"><a href="#cb24-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb24-43"><a href="#cb24-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbarh</span>(<span class="fu">aes</span>(<span class="at">xmin =</span> low, <span class="at">xmax =</span> high), <span class="at">height =</span> .<span class="dv">15</span>) <span class="sc">+</span></span>
+<span id="cb24-44"><a href="#cb24-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(</span>
+<span id="cb24-45"><a href="#cb24-45" aria-hidden="true" tabindex="-1"></a>    explanatory <span class="sc">~</span> response,</span>
+<span id="cb24-46"><a href="#cb24-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">scales  =</span> <span class="st">&quot;free_y&quot;</span>,</span>
+<span id="cb24-47"><a href="#cb24-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">space   =</span> <span class="st">&quot;free_y&quot;</span>,</span>
+<span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">labeller =</span> <span class="fu">labeller</span>(</span>
+<span id="cb24-49"><a href="#cb24-49" aria-hidden="true" tabindex="-1"></a>      <span class="at">response    =</span> resp_lab_wrapped,</span>
+<span id="cb24-50"><a href="#cb24-50" aria-hidden="true" tabindex="-1"></a>      <span class="at">explanatory =</span> explanatory_labels</span>
+<span id="cb24-51"><a href="#cb24-51" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb24-52"><a href="#cb24-52" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span>                         </span>
+<span id="cb24-53"><a href="#cb24-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb24-54"><a href="#cb24-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb24-55"><a href="#cb24-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">9</span>) <span class="sc">+</span></span>
+<span id="cb24-56"><a href="#cb24-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb24-57"><a href="#cb24-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.background   =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;gray90&quot;</span>, <span class="at">colour =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="cb24-58"><a href="#cb24-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text.y       =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">0</span>, <span class="at">hjust =</span> <span class="dv">0</span>),</span>
+<span id="cb24-59"><a href="#cb24-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y       =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb24-60"><a href="#cb24-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">colour =</span> <span class="st">&quot;black&quot;</span>), </span>
+<span id="cb24-61"><a href="#cb24-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin        =</span> <span class="fu">margin</span>(<span class="dv">12</span>, <span class="dv">12</span>, <span class="dv">12</span>, <span class="dv">12</span>),</span>
+<span id="cb24-62"><a href="#cb24-62" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major   =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb24-63"><a href="#cb24-63" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor   =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb24-64"><a href="#cb24-64" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb24-65"><a href="#cb24-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb24-66"><a href="#cb24-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Mean Likert score</span><span class="sc">\n</span><span class="st">(Error bars show 10th–90th percentiles)&quot;</span></span>
+<span id="cb24-67"><a href="#cb24-67" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -3465,15 +3461,15 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 </div>
 </div>
 </section>
-<section id="covid-survey---re-reconstruct" class="level2">
-<h2 class="anchored" data-anchor-id="covid-survey---re-reconstruct">4 - COVID survey - re-reconstruct</h2>
+<section id="covid-survey---re-reconstruct-with-25th-75th-percentile" class="level2">
+<h2 class="anchored" data-anchor-id="covid-survey---re-reconstruct-with-25th-75th-percentile">4 - COVID survey - re-reconstruct with 25th-75th percentile</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: COVID survey - reconstruct</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load CSV  &amp;  Clean raw data</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/covid-survey.csv&quot;</span>, <span class="at">skip =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: COVID survey - reconstruct</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load CSV  &amp;  Clean raw data</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/covid-survey.csv&quot;</span>, <span class="at">skip =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 1121 Columns: 14
 ── Column specification ────────────────────────────────────────────────────────
@@ -3483,53 +3479,53 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm the shape</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm the shape</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1121   14</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># drop rows where EVERYTHING except response_id is NA</span></span>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># drop rows where EVERYTHING except response_id is NA</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">if_all</span>(<span class="sc">-</span>response_id, is.na))</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm the shape again</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1111   14</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># recode explanatory variables</span></span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">if_all</span>(<span class="sc">-</span>response_id, is.na))</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm the shape again</span></span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_already_vax =</span> <span class="fu">recode</span>(exp_already_vax, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>),</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_flu_vax =</span> <span class="fu">recode</span>(exp_flu_vax, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>),</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_profession =</span> <span class="fu">recode</span>(exp_profession, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Medical&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Nursing&quot;</span>),</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_gender =</span> <span class="fu">recode</span>(exp_gender, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Male&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Female&quot;</span>, <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Non-binary third gender&quot;</span>, <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Prefer not to say&quot;</span>),</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_race =</span> <span class="fu">recode</span>(exp_race, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;American Indian / Alaskan Native&quot;</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Asian&quot;</span>, <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Black / African American&quot;</span>, <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Native Hawaiian / Other Pacific Islander&quot;</span>, <span class="st">`</span><span class="at">5</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;White&quot;</span>),</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_ethnicity =</span> <span class="fu">recode</span>(exp_ethnicity, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Hispanic / Latino&quot;</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Non-Hispanic/Non-Latino&quot;</span>),</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_age_bin =</span> <span class="fu">recode</span>(exp_age_bin, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;&lt;20&quot;</span>, <span class="st">`</span><span class="at">20</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;21-25&quot;</span>, <span class="st">`</span><span class="at">25</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;26-30&quot;</span>, <span class="st">`</span><span class="at">30</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;&gt;30&quot;</span>)</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1111   14</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># recode explanatory variables</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>covid_survey <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_already_vax =</span> <span class="fu">recode</span>(exp_already_vax, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>),</span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_flu_vax =</span> <span class="fu">recode</span>(exp_flu_vax, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;No&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Yes&quot;</span>),</span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_profession =</span> <span class="fu">recode</span>(exp_profession, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Medical&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Nursing&quot;</span>),</span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_gender =</span> <span class="fu">recode</span>(exp_gender, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Male&quot;</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Female&quot;</span>, <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Non-binary third gender&quot;</span>, <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Prefer not to say&quot;</span>),</span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_race =</span> <span class="fu">recode</span>(exp_race, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;American Indian / Alaskan Native&quot;</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Asian&quot;</span>, <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Black / African American&quot;</span>, <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Native Hawaiian / Other Pacific Islander&quot;</span>, <span class="st">`</span><span class="at">5</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;White&quot;</span>),</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_ethnicity =</span> <span class="fu">recode</span>(exp_ethnicity, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Hispanic / Latino&quot;</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;Non-Hispanic/Non-Latino&quot;</span>),</span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">exp_age_bin =</span> <span class="fu">recode</span>(exp_age_bin, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;&lt;20&quot;</span>, <span class="st">`</span><span class="at">20</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;21-25&quot;</span>, <span class="st">`</span><span class="at">25</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;26-30&quot;</span>, <span class="st">`</span><span class="at">30</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;&gt;30&quot;</span>)</span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid_survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 1111   14</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Pivot to long &amp; summarise (mean, 10th, 90th)</span></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>covid_survey_longer <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;exp_&quot;</span>),</span>
-<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;explanatory&quot;</span>,</span>
-<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;explanatory_value&quot;</span></span>
-<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(explanatory_value)) <span class="sc">%&gt;%</span></span>
-<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;resp_&quot;</span>),</span>
-<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;response&quot;</span>,</span>
-<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;response_value&quot;</span></span>
-<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>covid_survey_longer</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Pivot to long &amp; summarise (mean, 10th, 90th)</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>covid_survey_longer <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;exp_&quot;</span>),</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;explanatory&quot;</span>,</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;explanatory_value&quot;</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(explanatory_value)) <span class="sc">%&gt;%</span></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;resp_&quot;</span>),</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;response&quot;</span>,</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;response_value&quot;</span></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>covid_survey_longer</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 43,428 × 5
    response_id explanatory    explanatory_value response          response_value
@@ -3546,17 +3542,17 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 10           1 exp_flu_vax    Yes               resp_feel_safe_a…              1
 # ℹ 43,418 more rows</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Changes according to </span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_by_group <span class="ot">&lt;-</span> covid_survey_longer <span class="sc">%&gt;%</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(explanatory, explanatory_value, response) <span class="sc">%&gt;%</span></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(response_value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">low =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">high =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_by_group</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Changes according to </span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_by_group <span class="ot">&lt;-</span> covid_survey_longer <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(explanatory, explanatory_value, response) <span class="sc">%&gt;%</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(response_value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">low =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">high =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_by_group</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 126 × 6
    explanatory explanatory_value response                 mean   low  high
@@ -3573,20 +3569,20 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 10 exp_age_bin 26-30             resp_safety              2.16     1   4  
 # ℹ 116 more rows</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_all <span class="ot">&lt;-</span> covid_survey_longer <span class="sc">%&gt;%</span></span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(response) <span class="sc">%&gt;%</span></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(response_value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">low =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">high =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">explanatory =</span> <span class="st">&quot;All&quot;</span>,</span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">explanatory_value =</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_all <span class="ot">&lt;-</span> covid_survey_longer <span class="sc">%&gt;%</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(response) <span class="sc">%&gt;%</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(response_value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">low =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">high =</span> <span class="fu">quantile</span>(response_value, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">explanatory =</span> <span class="st">&quot;All&quot;</span>,</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">explanatory_value =</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats_all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 6
   response                 mean   low  high explanatory explanatory_value
@@ -3598,12 +3594,12 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 5 resp_trust_info          1.40     1     2 All         &quot;&quot;               
 6 resp_will_recommend      1.21     1     1 All         &quot;&quot;               </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  covid_survey_summary_stats_all,</span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  covid_survey_summary_stats_by_group</span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  covid_survey_summary_stats_all,</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  covid_survey_summary_stats_by_group</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 132 × 6
    response                 mean   low  high explanatory explanatory_value
@@ -3620,73 +3616,73 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 10 resp_safety              1.95     1     2 exp_age_bin &quot;21-25&quot;          
 # ℹ 122 more rows</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Facet-strip label vectors</span></span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>response_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_safety =</span> <span class="st">&quot;Based on my understanding,</span><span class="sc">\n</span><span class="st">I believe the vaccine is safe&quot;</span>,</span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_confidence_science =</span> <span class="st">&quot;I am confident in the</span><span class="sc">\n</span><span class="st">scientific vetting process</span><span class="sc">\n</span><span class="st">for the new COVID vaccines&quot;</span>,</span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_feel_safe_at_work =</span> <span class="st">&quot;Getting the vaccine</span><span class="sc">\n</span><span class="st">will make me feel safer at work&quot;</span>,</span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_will_recommend =</span> <span class="st">&quot;I will recommend the vaccine</span><span class="sc">\n</span><span class="st">to family, friends,</span><span class="sc">\n</span><span class="st">and community members&quot;</span>,</span>
-<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_trust_info =</span> <span class="st">&quot;I trust the information that</span><span class="sc">\n</span><span class="st">I have received about the vaccines&quot;</span>,</span>
-<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_concern_safety =</span> <span class="st">&quot;I am concerned about the</span><span class="sc">\n</span><span class="st">safety and side effects</span><span class="sc">\n</span><span class="st">of the vaccine&quot;</span></span>
-<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>explanatory_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_age_bin =</span> <span class="st">&quot;Age&quot;</span>,</span>
-<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_gender =</span> <span class="st">&quot;Gender&quot;</span>,</span>
-<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_race =</span> <span class="st">&quot;Race&quot;</span>,</span>
-<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_ethnicity =</span> <span class="st">&quot;Ethnicity&quot;</span>,</span>
-<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_profession =</span> <span class="st">&quot;Profession&quot;</span>,</span>
-<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_already_vax =</span> <span class="st">&quot;Had COVID vaccine&quot;</span>,</span>
-<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_flu_vax =</span> <span class="st">&quot;Had flu vaccine this year&quot;</span>,</span>
-<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">All =</span> <span class="st">&quot;All&quot;</span></span>
-<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-24"><a href="#cb43-24" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repr.plot.width  =</span> <span class="dv">18</span>,</span>
-<span id="cb43-25"><a href="#cb43-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">repr.plot.height =</span> <span class="dv">15</span>)</span>
-<span id="cb43-26"><a href="#cb43-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-27"><a href="#cb43-27" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats <span class="ot">&lt;-</span> covid_survey_summary_stats <span class="sc">%&gt;%</span> </span>
-<span id="cb43-28"><a href="#cb43-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(explanatory) <span class="sc">%&gt;%</span> </span>
-<span id="cb43-29"><a href="#cb43-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">explanatory_value =</span> <span class="fu">fct_rev</span>(<span class="fu">fct_inorder</span>(explanatory_value))) <span class="sc">%&gt;%</span> </span>
-<span id="cb43-30"><a href="#cb43-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb43-31"><a href="#cb43-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-32"><a href="#cb43-32" aria-hidden="true" tabindex="-1"></a>resp_lab_wrapped <span class="ot">&lt;-</span> <span class="fu">setNames</span>(</span>
-<span id="cb43-33"><a href="#cb43-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_wrap</span>(<span class="fu">unname</span>(response_labels), <span class="at">width =</span> <span class="dv">25</span>),</span>
-<span id="cb43-34"><a href="#cb43-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(response_labels)</span>
-<span id="cb43-35"><a href="#cb43-35" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb43-36"><a href="#cb43-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-37"><a href="#cb43-37" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb43-38"><a href="#cb43-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Final faceted plot</span></span>
-<span id="cb43-39"><a href="#cb43-39" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
-<span id="cb43-40"><a href="#cb43-40" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(covid_survey_summary_stats,</span>
-<span id="cb43-41"><a href="#cb43-41" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> mean, <span class="at">y =</span> explanatory_value)) <span class="sc">+</span></span>
-<span id="cb43-42"><a href="#cb43-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb43-43"><a href="#cb43-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbarh</span>(<span class="fu">aes</span>(<span class="at">xmin =</span> low, <span class="at">xmax =</span> high), <span class="at">height =</span> .<span class="dv">15</span>) <span class="sc">+</span></span>
-<span id="cb43-44"><a href="#cb43-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(</span>
-<span id="cb43-45"><a href="#cb43-45" aria-hidden="true" tabindex="-1"></a>    explanatory <span class="sc">~</span> response,</span>
-<span id="cb43-46"><a href="#cb43-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">scales  =</span> <span class="st">&quot;free_y&quot;</span>,</span>
-<span id="cb43-47"><a href="#cb43-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">space   =</span> <span class="st">&quot;free_y&quot;</span>,</span>
-<span id="cb43-48"><a href="#cb43-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">labeller =</span> <span class="fu">labeller</span>(</span>
-<span id="cb43-49"><a href="#cb43-49" aria-hidden="true" tabindex="-1"></a>      <span class="at">response    =</span> resp_lab_wrapped,</span>
-<span id="cb43-50"><a href="#cb43-50" aria-hidden="true" tabindex="-1"></a>      <span class="at">explanatory =</span> explanatory_labels</span>
-<span id="cb43-51"><a href="#cb43-51" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb43-52"><a href="#cb43-52" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span>                         </span>
-<span id="cb43-53"><a href="#cb43-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb43-54"><a href="#cb43-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>)) <span class="sc">+</span></span>
-<span id="cb43-55"><a href="#cb43-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">9</span>) <span class="sc">+</span></span>
-<span id="cb43-56"><a href="#cb43-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb43-57"><a href="#cb43-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.background   =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;gray90&quot;</span>, <span class="at">colour =</span> <span class="st">&quot;black&quot;</span>),</span>
-<span id="cb43-58"><a href="#cb43-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text.y       =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">0</span>, <span class="at">hjust =</span> <span class="dv">0</span>),</span>
-<span id="cb43-59"><a href="#cb43-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y       =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb43-60"><a href="#cb43-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">colour =</span> <span class="st">&quot;black&quot;</span>), </span>
-<span id="cb43-61"><a href="#cb43-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin        =</span> <span class="fu">margin</span>(<span class="dv">12</span>, <span class="dv">12</span>, <span class="dv">12</span>, <span class="dv">12</span>),</span>
-<span id="cb43-62"><a href="#cb43-62" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major   =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb43-63"><a href="#cb43-63" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor   =</span> <span class="fu">element_blank</span>()</span>
-<span id="cb43-64"><a href="#cb43-64" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb43-65"><a href="#cb43-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb43-66"><a href="#cb43-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Mean Likert score</span><span class="sc">\n</span><span class="st">(Error bars show 25th–75th percentiles)&quot;</span></span>
-<span id="cb43-67"><a href="#cb43-67" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Facet-strip label vectors</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>response_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_safety =</span> <span class="st">&quot;Based on my understanding,</span><span class="sc">\n</span><span class="st">I believe the vaccine is safe&quot;</span>,</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_confidence_science =</span> <span class="st">&quot;I am confident in the</span><span class="sc">\n</span><span class="st">scientific vetting process</span><span class="sc">\n</span><span class="st">for the new COVID vaccines&quot;</span>,</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_feel_safe_at_work =</span> <span class="st">&quot;Getting the vaccine</span><span class="sc">\n</span><span class="st">will make me feel safer at work&quot;</span>,</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_will_recommend =</span> <span class="st">&quot;I will recommend the vaccine</span><span class="sc">\n</span><span class="st">to family, friends,</span><span class="sc">\n</span><span class="st">and community members&quot;</span>,</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_trust_info =</span> <span class="st">&quot;I trust the information that</span><span class="sc">\n</span><span class="st">I have received about the vaccines&quot;</span>,</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_concern_safety =</span> <span class="st">&quot;I am concerned about the</span><span class="sc">\n</span><span class="st">safety and side effects</span><span class="sc">\n</span><span class="st">of the vaccine&quot;</span></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>explanatory_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_age_bin =</span> <span class="st">&quot;Age&quot;</span>,</span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_gender =</span> <span class="st">&quot;Gender&quot;</span>,</span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_race =</span> <span class="st">&quot;Race&quot;</span>,</span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_ethnicity =</span> <span class="st">&quot;Ethnicity&quot;</span>,</span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_profession =</span> <span class="st">&quot;Profession&quot;</span>,</span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_already_vax =</span> <span class="st">&quot;Had COVID vaccine&quot;</span>,</span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_flu_vax =</span> <span class="st">&quot;Had flu vaccine this year&quot;</span>,</span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">All =</span> <span class="st">&quot;All&quot;</span></span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repr.plot.width  =</span> <span class="dv">18</span>,</span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">repr.plot.height =</span> <span class="dv">15</span>)</span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a>covid_survey_summary_stats <span class="ot">&lt;-</span> covid_survey_summary_stats <span class="sc">%&gt;%</span> </span>
+<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(explanatory) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">explanatory_value =</span> <span class="fu">fct_rev</span>(<span class="fu">fct_inorder</span>(explanatory_value))) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-30"><a href="#cb41-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a>resp_lab_wrapped <span class="ot">&lt;-</span> <span class="fu">setNames</span>(</span>
+<span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_wrap</span>(<span class="fu">unname</span>(response_labels), <span class="at">width =</span> <span class="dv">25</span>),</span>
+<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(response_labels)</span>
+<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb41-38"><a href="#cb41-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Final faceted plot</span></span>
+<span id="cb41-39"><a href="#cb41-39" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────────────────────────────</span></span>
+<span id="cb41-40"><a href="#cb41-40" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(covid_survey_summary_stats,</span>
+<span id="cb41-41"><a href="#cb41-41" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> mean, <span class="at">y =</span> explanatory_value)) <span class="sc">+</span></span>
+<span id="cb41-42"><a href="#cb41-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb41-43"><a href="#cb41-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbarh</span>(<span class="fu">aes</span>(<span class="at">xmin =</span> low, <span class="at">xmax =</span> high), <span class="at">height =</span> .<span class="dv">15</span>) <span class="sc">+</span></span>
+<span id="cb41-44"><a href="#cb41-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(</span>
+<span id="cb41-45"><a href="#cb41-45" aria-hidden="true" tabindex="-1"></a>    explanatory <span class="sc">~</span> response,</span>
+<span id="cb41-46"><a href="#cb41-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">scales  =</span> <span class="st">&quot;free_y&quot;</span>,</span>
+<span id="cb41-47"><a href="#cb41-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">space   =</span> <span class="st">&quot;free_y&quot;</span>,</span>
+<span id="cb41-48"><a href="#cb41-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">labeller =</span> <span class="fu">labeller</span>(</span>
+<span id="cb41-49"><a href="#cb41-49" aria-hidden="true" tabindex="-1"></a>      <span class="at">response    =</span> resp_lab_wrapped,</span>
+<span id="cb41-50"><a href="#cb41-50" aria-hidden="true" tabindex="-1"></a>      <span class="at">explanatory =</span> explanatory_labels</span>
+<span id="cb41-51"><a href="#cb41-51" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb41-52"><a href="#cb41-52" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span>                         </span>
+<span id="cb41-53"><a href="#cb41-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb41-54"><a href="#cb41-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb41-55"><a href="#cb41-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">9</span>) <span class="sc">+</span></span>
+<span id="cb41-56"><a href="#cb41-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb41-57"><a href="#cb41-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.background   =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;gray90&quot;</span>, <span class="at">colour =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="cb41-58"><a href="#cb41-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text.y       =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">0</span>, <span class="at">hjust =</span> <span class="dv">0</span>),</span>
+<span id="cb41-59"><a href="#cb41-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y       =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb41-60"><a href="#cb41-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">colour =</span> <span class="st">&quot;black&quot;</span>), </span>
+<span id="cb41-61"><a href="#cb41-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin        =</span> <span class="fu">margin</span>(<span class="dv">12</span>, <span class="dv">12</span>, <span class="dv">12</span>, <span class="dv">12</span>),</span>
+<span id="cb41-62"><a href="#cb41-62" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major   =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb41-63"><a href="#cb41-63" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor   =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb41-64"><a href="#cb41-64" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb41-65"><a href="#cb41-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb41-66"><a href="#cb41-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Mean Likert score</span><span class="sc">\n</span><span class="st">(Error bars show 25th–75th percentiles)&quot;</span></span>
+<span id="cb41-67"><a href="#cb41-67" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -3700,89 +3696,89 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 <section id="covid-survey---another-view" class="level2">
 <h2 class="anchored" data-anchor-id="covid-survey---another-view">5 - COVID survey - another view</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>likert_levels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Strongly Agree&quot;</span>, <span class="st">&quot;Somewhat Agree&quot;</span>, <span class="st">&quot;Neutral&quot;</span>, <span class="st">&quot;Somewhat Disagree&quot;</span>, <span class="st">&quot;Strongly Disagree&quot;</span>)</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>likert_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Strongly Agree&quot;</span> <span class="ot">=</span> <span class="st">&quot;#006400&quot;</span>,</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Somewhat Agree&quot;</span> <span class="ot">=</span> <span class="st">&quot;#66CD00&quot;</span>,</span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Neutral&quot;</span> <span class="ot">=</span> <span class="st">&quot;#FFFF66&quot;</span>,</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Somewhat Disagree&quot;</span> <span class="ot">=</span> <span class="st">&quot;#FFA500&quot;</span>,</span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Strongly Disagree&quot;</span> <span class="ot">=</span> <span class="st">&quot;#B22222&quot;</span></span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Define descriptive question labels</span></span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>response_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_safety =</span> <span class="st">&quot;Based on my understanding,</span><span class="sc">\n</span><span class="st">I believe the vaccine is safe&quot;</span>,</span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_confidence_science =</span> <span class="st">&quot;I am confident in the</span><span class="sc">\n</span><span class="st">scientific vetting process</span><span class="sc">\n</span><span class="st">for the new COVID vaccines&quot;</span>,</span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_feel_safe_at_work =</span> <span class="st">&quot;Getting the vaccine</span><span class="sc">\n</span><span class="st">will make me feel safer at work&quot;</span>,</span>
-<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_will_recommend =</span> <span class="st">&quot;I will recommend the vaccine</span><span class="sc">\n</span><span class="st">to family, friends,</span><span class="sc">\n</span><span class="st">and community members&quot;</span>,</span>
-<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_trust_info =</span> <span class="st">&quot;I trust the information that</span><span class="sc">\n</span><span class="st">I have received about the vaccines&quot;</span>,</span>
-<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_concern_safety =</span> <span class="st">&quot;I am concerned about the</span><span class="sc">\n</span><span class="st">safety and side effects</span><span class="sc">\n</span><span class="st">of the vaccine&quot;</span></span>
-<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-20"><a href="#cb44-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare and summarize data</span></span>
-<span id="cb44-21"><a href="#cb44-21" aria-hidden="true" tabindex="-1"></a>likert_summary <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
-<span id="cb44-22"><a href="#cb44-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;resp_&quot;</span>), <span class="at">names_to =</span> <span class="st">&quot;question&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;response_value&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb44-23"><a href="#cb44-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(response_value)) <span class="sc">%&gt;%</span></span>
-<span id="cb44-24"><a href="#cb44-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb44-25"><a href="#cb44-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">response_label =</span> <span class="fu">factor</span>(response_value, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">labels =</span> likert_levels),</span>
-<span id="cb44-26"><a href="#cb44-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">question =</span> <span class="fu">recode</span>(question, <span class="sc">!!!</span>response_labels),</span>
-<span id="cb44-27"><a href="#cb44-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">question =</span> <span class="fu">factor</span>(question, <span class="at">levels =</span> response_labels)</span>
-<span id="cb44-28"><a href="#cb44-28" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb44-29"><a href="#cb44-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(question, response_label, <span class="at">name =</span> <span class="st">&quot;n&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb44-30"><a href="#cb44-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(question) <span class="sc">%&gt;%</span></span>
-<span id="cb44-31"><a href="#cb44-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n)) <span class="sc">%&gt;%</span></span>
-<span id="cb44-32"><a href="#cb44-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb44-33"><a href="#cb44-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-34"><a href="#cb44-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Create diverging version of the data</span></span>
-<span id="cb44-35"><a href="#cb44-35" aria-hidden="true" tabindex="-1"></a>likert_diverging <span class="ot">&lt;-</span> likert_summary <span class="sc">%&gt;%</span></span>
-<span id="cb44-36"><a href="#cb44-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct =</span> <span class="fu">if_else</span>(response_label <span class="sc">%in%</span> likert_levels[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="sc">-</span>pct, pct))</span>
-<span id="cb44-37"><a href="#cb44-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-38"><a href="#cb44-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Diverging bar plot</span></span>
-<span id="cb44-39"><a href="#cb44-39" aria-hidden="true" tabindex="-1"></a>diverging_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(likert_diverging, <span class="fu">aes</span>(<span class="at">x =</span> pct, <span class="at">y =</span> <span class="fu">fct_rev</span>(question), <span class="at">fill =</span> response_label)) <span class="sc">+</span></span>
-<span id="cb44-40"><a href="#cb44-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb44-41"><a href="#cb44-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(</span>
-<span id="cb44-42"><a href="#cb44-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">0.75</span>, <span class="fl">0.75</span>, <span class="at">by =</span> <span class="fl">0.25</span>),</span>
-<span id="cb44-43"><a href="#cb44-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">percent_format</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)</span>
-<span id="cb44-44"><a href="#cb44-44" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb44-45"><a href="#cb44-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> likert_colors) <span class="sc">+</span></span>
-<span id="cb44-46"><a href="#cb44-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Proportion of Responses&quot;</span>, <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb44-47"><a href="#cb44-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb44-48"><a href="#cb44-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb44-49"><a href="#cb44-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>,</span>
-<span id="cb44-50"><a href="#cb44-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>),</span>
-<span id="cb44-51"><a href="#cb44-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb44-52"><a href="#cb44-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;cm&quot;</span>),</span>
-<span id="cb44-53"><a href="#cb44-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;cm&quot;</span>),</span>
-<span id="cb44-54"><a href="#cb44-54" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.spacing.x =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;cm&quot;</span>),</span>
-<span id="cb44-55"><a href="#cb44-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>)</span>
-<span id="cb44-56"><a href="#cb44-56" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb44-57"><a href="#cb44-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-58"><a href="#cb44-58" aria-hidden="true" tabindex="-1"></a><span class="co"># 100% stacked bar plot</span></span>
-<span id="cb44-59"><a href="#cb44-59" aria-hidden="true" tabindex="-1"></a>stacked_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(likert_summary, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">fct_rev</span>(question), <span class="at">y =</span> pct, <span class="at">fill =</span> response_label)) <span class="sc">+</span></span>
-<span id="cb44-60"><a href="#cb44-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">position =</span> <span class="st">&quot;fill&quot;</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb44-61"><a href="#cb44-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
-<span id="cb44-62"><a href="#cb44-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">percent_format</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb44-63"><a href="#cb44-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> likert_colors) <span class="sc">+</span></span>
-<span id="cb44-64"><a href="#cb44-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">&quot;Proportion of Responses&quot;</span>) <span class="sc">+</span></span>
-<span id="cb44-65"><a href="#cb44-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb44-66"><a href="#cb44-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb44-67"><a href="#cb44-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb44-68"><a href="#cb44-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb44-69"><a href="#cb44-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb44-70"><a href="#cb44-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>,</span>
-<span id="cb44-71"><a href="#cb44-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>)</span>
-<span id="cb44-72"><a href="#cb44-72" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb44-73"><a href="#cb44-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-74"><a href="#cb44-74" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine plots with shared legend</span></span>
-<span id="cb44-75"><a href="#cb44-75" aria-hidden="true" tabindex="-1"></a>(diverging_plot <span class="sc">+</span> stacked_plot) <span class="sc">+</span></span>
-<span id="cb44-76"><a href="#cb44-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">widths =</span> <span class="fu">c</span>(<span class="fl">1.3</span>, <span class="fl">1.3</span>), <span class="at">guides =</span> <span class="st">&quot;collect&quot;</span>) <span class="sc">+</span></span>
-<span id="cb44-77"><a href="#cb44-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_annotation</span>(</span>
-<span id="cb44-78"><a href="#cb44-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;What people had to say about COVID-19 Vaccines&quot;</span>,</span>
-<span id="cb44-79"><a href="#cb44-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">&quot;Interpreting the survey using a Diverging bar plot and a 100% bar plot&quot;</span>,</span>
-<span id="cb44-80"><a href="#cb44-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">theme =</span> <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">size =</span> <span class="dv">16</span>),</span>
-<span id="cb44-81"><a href="#cb44-81" aria-hidden="true" tabindex="-1"></a>                  <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
-<span id="cb44-82"><a href="#cb44-82" aria-hidden="true" tabindex="-1"></a>                  <span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>)</span>
-<span id="cb44-83"><a href="#cb44-83" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>likert_levels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Strongly Agree&quot;</span>, <span class="st">&quot;Somewhat Agree&quot;</span>, <span class="st">&quot;Neutral&quot;</span>, <span class="st">&quot;Somewhat Disagree&quot;</span>, <span class="st">&quot;Strongly Disagree&quot;</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>likert_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Strongly Agree&quot;</span> <span class="ot">=</span> <span class="st">&quot;#006400&quot;</span>,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Somewhat Agree&quot;</span> <span class="ot">=</span> <span class="st">&quot;#66CD00&quot;</span>,</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Neutral&quot;</span> <span class="ot">=</span> <span class="st">&quot;#FFFF66&quot;</span>,</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Somewhat Disagree&quot;</span> <span class="ot">=</span> <span class="st">&quot;#FFA500&quot;</span>,</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Strongly Disagree&quot;</span> <span class="ot">=</span> <span class="st">&quot;#B22222&quot;</span></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Define descriptive question labels</span></span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>response_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_safety =</span> <span class="st">&quot;Based on my understanding,</span><span class="sc">\n</span><span class="st">I believe the vaccine is safe&quot;</span>,</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_confidence_science =</span> <span class="st">&quot;I am confident in the</span><span class="sc">\n</span><span class="st">scientific vetting process</span><span class="sc">\n</span><span class="st">for the new COVID vaccines&quot;</span>,</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_feel_safe_at_work =</span> <span class="st">&quot;Getting the vaccine</span><span class="sc">\n</span><span class="st">will make me feel safer at work&quot;</span>,</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_will_recommend =</span> <span class="st">&quot;I will recommend the vaccine</span><span class="sc">\n</span><span class="st">to family, friends,</span><span class="sc">\n</span><span class="st">and community members&quot;</span>,</span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_trust_info =</span> <span class="st">&quot;I trust the information that</span><span class="sc">\n</span><span class="st">I have received about the vaccines&quot;</span>,</span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">resp_concern_safety =</span> <span class="st">&quot;I am concerned about the</span><span class="sc">\n</span><span class="st">safety and side effects</span><span class="sc">\n</span><span class="st">of the vaccine&quot;</span></span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-20"><a href="#cb42-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare and summarize data</span></span>
+<span id="cb42-21"><a href="#cb42-21" aria-hidden="true" tabindex="-1"></a>likert_summary <span class="ot">&lt;-</span> covid_survey <span class="sc">%&gt;%</span></span>
+<span id="cb42-22"><a href="#cb42-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">&quot;resp_&quot;</span>), <span class="at">names_to =</span> <span class="st">&quot;question&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;response_value&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-23"><a href="#cb42-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(response_value)) <span class="sc">%&gt;%</span></span>
+<span id="cb42-24"><a href="#cb42-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb42-25"><a href="#cb42-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">response_label =</span> <span class="fu">factor</span>(response_value, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">labels =</span> likert_levels),</span>
+<span id="cb42-26"><a href="#cb42-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">question =</span> <span class="fu">recode</span>(question, <span class="sc">!!!</span>response_labels),</span>
+<span id="cb42-27"><a href="#cb42-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">question =</span> <span class="fu">factor</span>(question, <span class="at">levels =</span> response_labels)</span>
+<span id="cb42-28"><a href="#cb42-28" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb42-29"><a href="#cb42-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(question, response_label, <span class="at">name =</span> <span class="st">&quot;n&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-30"><a href="#cb42-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(question) <span class="sc">%&gt;%</span></span>
+<span id="cb42-31"><a href="#cb42-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n)) <span class="sc">%&gt;%</span></span>
+<span id="cb42-32"><a href="#cb42-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb42-33"><a href="#cb42-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-34"><a href="#cb42-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Create diverging version of the data</span></span>
+<span id="cb42-35"><a href="#cb42-35" aria-hidden="true" tabindex="-1"></a>likert_diverging <span class="ot">&lt;-</span> likert_summary <span class="sc">%&gt;%</span></span>
+<span id="cb42-36"><a href="#cb42-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct =</span> <span class="fu">if_else</span>(response_label <span class="sc">%in%</span> likert_levels[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="sc">-</span>pct, pct))</span>
+<span id="cb42-37"><a href="#cb42-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-38"><a href="#cb42-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Diverging bar plot</span></span>
+<span id="cb42-39"><a href="#cb42-39" aria-hidden="true" tabindex="-1"></a>diverging_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(likert_diverging, <span class="fu">aes</span>(<span class="at">x =</span> pct, <span class="at">y =</span> <span class="fu">fct_rev</span>(question), <span class="at">fill =</span> response_label)) <span class="sc">+</span></span>
+<span id="cb42-40"><a href="#cb42-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb42-41"><a href="#cb42-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(</span>
+<span id="cb42-42"><a href="#cb42-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">0.75</span>, <span class="fl">0.75</span>, <span class="at">by =</span> <span class="fl">0.25</span>),</span>
+<span id="cb42-43"><a href="#cb42-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">percent_format</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)</span>
+<span id="cb42-44"><a href="#cb42-44" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb42-45"><a href="#cb42-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> likert_colors) <span class="sc">+</span></span>
+<span id="cb42-46"><a href="#cb42-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Proportion of Responses&quot;</span>, <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb42-47"><a href="#cb42-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb42-48"><a href="#cb42-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb42-49"><a href="#cb42-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>,</span>
+<span id="cb42-50"><a href="#cb42-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>),</span>
+<span id="cb42-51"><a href="#cb42-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb42-52"><a href="#cb42-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;cm&quot;</span>),</span>
+<span id="cb42-53"><a href="#cb42-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;cm&quot;</span>),</span>
+<span id="cb42-54"><a href="#cb42-54" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.spacing.x =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">&quot;cm&quot;</span>),</span>
+<span id="cb42-55"><a href="#cb42-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>)</span>
+<span id="cb42-56"><a href="#cb42-56" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb42-57"><a href="#cb42-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-58"><a href="#cb42-58" aria-hidden="true" tabindex="-1"></a><span class="co"># 100% stacked bar plot</span></span>
+<span id="cb42-59"><a href="#cb42-59" aria-hidden="true" tabindex="-1"></a>stacked_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(likert_summary, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">fct_rev</span>(question), <span class="at">y =</span> pct, <span class="at">fill =</span> response_label)) <span class="sc">+</span></span>
+<span id="cb42-60"><a href="#cb42-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">position =</span> <span class="st">&quot;fill&quot;</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb42-61"><a href="#cb42-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb42-62"><a href="#cb42-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">percent_format</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb42-63"><a href="#cb42-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> likert_colors) <span class="sc">+</span></span>
+<span id="cb42-64"><a href="#cb42-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">&quot;Proportion of Responses&quot;</span>) <span class="sc">+</span></span>
+<span id="cb42-65"><a href="#cb42-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb42-66"><a href="#cb42-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb42-67"><a href="#cb42-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb42-68"><a href="#cb42-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb42-69"><a href="#cb42-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb42-70"><a href="#cb42-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb42-71"><a href="#cb42-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>)</span>
+<span id="cb42-72"><a href="#cb42-72" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb42-73"><a href="#cb42-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-74"><a href="#cb42-74" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine plots with shared legend</span></span>
+<span id="cb42-75"><a href="#cb42-75" aria-hidden="true" tabindex="-1"></a>(diverging_plot <span class="sc">+</span> stacked_plot) <span class="sc">+</span></span>
+<span id="cb42-76"><a href="#cb42-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">widths =</span> <span class="fu">c</span>(<span class="fl">1.3</span>, <span class="fl">1.3</span>), <span class="at">guides =</span> <span class="st">&quot;collect&quot;</span>) <span class="sc">+</span></span>
+<span id="cb42-77"><a href="#cb42-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_annotation</span>(</span>
+<span id="cb42-78"><a href="#cb42-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;What people had to say about COVID-19 Vaccines&quot;</span>,</span>
+<span id="cb42-79"><a href="#cb42-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">&quot;Interpreting the survey using a Diverging bar plot and a 100% bar plot&quot;</span>,</span>
+<span id="cb42-80"><a href="#cb42-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">theme =</span> <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">size =</span> <span class="dv">16</span>),</span>
+<span id="cb42-81"><a href="#cb42-81" aria-hidden="true" tabindex="-1"></a>                  <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
+<span id="cb42-82"><a href="#cb42-82" aria-hidden="true" tabindex="-1"></a>                  <span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>)</span>
+<span id="cb42-83"><a href="#cb42-83" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -3791,6 +3787,11 @@ dbl (14): response_id, exp_profession, exp_flu_vax, exp_gender, exp_race, ex...
 </div>
 </div>
 </div>
+<ol type="a">
+<li><p>A diverging bar chart visualizing responses to six COVID-19 vaccine-related survey questions. Each question appears along the y-axis, and horizontal bars diverge left for positive sentiments and right for negative sentiments. Green shades represent agreement, yellow indicates neutrality, and red/orange shades represent disagreement. Most responses cluster toward the agreement side, especially for questions about vaccine safety, confidence in science, and recommendations to others.</p></li>
+<li><p>A 100% stacked bar chart presenting the same six survey questions, with each bar representing the full distribution of responses. Green segments dominate most bars, especially for questions related to safety, trust, and recommendation, while disagreement is most notable in the question regarding concern about side effects.</p></li>
+<li><p>The diverging bar chart emphasizes polarity—how far responses deviate from neutrality—making it easier to see which questions received strong agreement or disagreement. In contrast, the 100% bar chart emphasizes the distribution of responses within each question, making it ideal for comparing proportions across questions on the same scale.</p></li>
+</ol>
 </section>
 
 </main>
