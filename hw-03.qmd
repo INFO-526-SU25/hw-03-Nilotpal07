@@ -25,7 +25,8 @@ pacman::p_load(tidyverse,
                ggtext,
                cowplot,
                forcats,
-               stringr)
+               stringr,
+               patchwork)
 
 devtools::install_github("tidyverse/dsbox")
 ```
@@ -255,5 +256,244 @@ ggplot(covid_survey_summary_stats,
 
 ```
 ## 4 - COVID survey - re-reconstruct
+```{r, fig.width=15, fig.height=10}
+
+#| label: COVID survey - reconstruct
+
+# ─────────────────────────────────────────────────────────
+# Load CSV  &  Clean raw data
+# ─────────────────────────────────────────────────────────
+covid_survey <- read_csv("data/covid-survey.csv", skip = 1)
+
+# Confirm the shape
+dim(covid_survey)
+
+# drop rows where EVERYTHING except response_id is NA
+covid_survey <- covid_survey %>%
+  filter(!if_all(-response_id, is.na))
+
+# Confirm the shape again
+dim(covid_survey)
+
+# recode explanatory variables
+covid_survey <- covid_survey %>%
+  mutate(
+    exp_already_vax = recode(exp_already_vax, `0` = "No", `1` = "Yes"),
+    exp_flu_vax = recode(exp_flu_vax, `0` = "No", `1` = "Yes"),
+    exp_profession = recode(exp_profession, `0` = "Medical", `1` = "Nursing"),
+    exp_gender = recode(exp_gender, `0` = "Male", `1` = "Female", `3` = "Non-binary third gender", `4` = "Prefer not to say"),
+    exp_race = recode(exp_race, `1` = "American Indian / Alaskan Native", `2` = "Asian", `3` = "Black / African American", `4` = "Native Hawaiian / Other Pacific Islander", `5` = "White"),
+    exp_ethnicity = recode(exp_ethnicity, `1` = "Hispanic / Latino", `2` = "Non-Hispanic/Non-Latino"),
+    exp_age_bin = recode(exp_age_bin, `0` = "<20", `20` = "21-25", `25` = "26-30", `30` = ">30")
+  )
+
+dim(covid_survey)
+
+# ─────────────────────────────────────────────────────────
+# Pivot to long & summarise (mean, 10th, 90th)
+# ─────────────────────────────────────────────────────────
+covid_survey_longer <- covid_survey %>%
+  pivot_longer(
+    cols = starts_with("exp_"),
+    names_to = "explanatory",
+    values_to = "explanatory_value"
+  ) %>%
+  filter(!is.na(explanatory_value)) %>%
+  pivot_longer(
+    cols = starts_with("resp_"),
+    names_to = "response",
+    values_to = "response_value"
+  )
+
+covid_survey_longer
+
+# Changes according to 
+covid_survey_summary_stats_by_group <- covid_survey_longer %>%
+  group_by(explanatory, explanatory_value, response) %>%
+  summarise(
+    mean = mean(response_value, na.rm = TRUE),
+    low = quantile(response_value, 0.25, na.rm = TRUE),
+    high = quantile(response_value, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+covid_survey_summary_stats_by_group
+
+covid_survey_summary_stats_all <- covid_survey_longer %>%
+  group_by(response) %>%
+  summarise(
+    mean = mean(response_value, na.rm = TRUE),
+    low = quantile(response_value, 0.25, na.rm = TRUE),
+    high = quantile(response_value, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    explanatory = "All",
+    explanatory_value = ""
+  )
+
+covid_survey_summary_stats_all
+
+covid_survey_summary_stats <- bind_rows(
+  covid_survey_summary_stats_all,
+  covid_survey_summary_stats_by_group
+)
+
+covid_survey_summary_stats
+
+# ─────────────────────────────────────────────────────────
+# Facet-strip label vectors
+# ─────────────────────────────────────────────────────────
+response_labels <- c(
+  resp_safety = "Based on my understanding,\nI believe the vaccine is safe",
+  resp_confidence_science = "I am confident in the\nscientific vetting process\nfor the new COVID vaccines",
+  resp_feel_safe_at_work = "Getting the vaccine\nwill make me feel safer at work",
+  resp_will_recommend = "I will recommend the vaccine\nto family, friends,\nand community members",
+  resp_trust_info = "I trust the information that\nI have received about the vaccines",
+  resp_concern_safety = "I am concerned about the\nsafety and side effects\nof the vaccine"
+)
+
+explanatory_labels <- c(
+  exp_age_bin = "Age",
+  exp_gender = "Gender",
+  exp_race = "Race",
+  exp_ethnicity = "Ethnicity",
+  exp_profession = "Profession",
+  exp_already_vax = "Had COVID vaccine",
+  exp_flu_vax = "Had flu vaccine this year",
+  All = "All"
+)
+
+options(repr.plot.width  = 18,
+        repr.plot.height = 15)
+
+covid_survey_summary_stats <- covid_survey_summary_stats %>% 
+  group_by(explanatory) %>% 
+  mutate(explanatory_value = fct_rev(fct_inorder(explanatory_value))) %>% 
+  ungroup()
+
+resp_lab_wrapped <- setNames(
+  str_wrap(unname(response_labels), width = 25),
+  names(response_labels)
+)
+
+# ─────────────────────────────────────────────────────────
+# Final faceted plot
+# ─────────────────────────────────────────────────────────
+ggplot(covid_survey_summary_stats,
+       aes(x = mean, y = explanatory_value)) +
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = low, xmax = high), height = .15) +
+  facet_grid(
+    explanatory ~ response,
+    scales  = "free_y",
+    space   = "free_y",
+    labeller = labeller(
+      response    = resp_lab_wrapped,
+      explanatory = explanatory_labels
+    )
+  ) +                         
+  scale_x_continuous(breaks = 1:5) +
+  coord_cartesian(xlim = c(1, 5)) +
+  theme_minimal(base_size = 9) +
+  theme(
+    strip.background   = element_rect(fill = "gray90", colour = "black"),
+    strip.text.y       = element_text(angle = 0, hjust = 0),
+    axis.title.y       = element_blank(),
+    axis.title.x = element_text(colour = "black"), 
+    plot.margin        = margin(12, 12, 12, 12),
+    panel.grid.major   = element_blank(),
+    panel.grid.minor   = element_blank()
+  ) +
+  labs(
+    x = "Mean Likert score\n(Error bars show 25th–75th percentiles)"
+  )
+```
+Using the 25th–75th percentile range instead of the 10th–90th makes the plot more focused on the core responses, reducing the influence of outlines. This results in shorter error bars, making differences between groups appear more distinct and easier to compare. While the overall trends and conclusions remain consistent with the 10th–90th version, the revised plot provides a clearer view of the central tendency and typical variability in responses. It helps emphasize where most respondents fall, rather than highlighting the full range of opinions.
 
 ## 5 - COVID survey - another view
+```{r}
+likert_levels <- c("Strongly Agree", "Somewhat Agree", "Neutral", "Somewhat Disagree", "Strongly Disagree")
+likert_colors <- c(
+  "Strongly Agree" = "#006400",
+  "Somewhat Agree" = "#66CD00",
+  "Neutral" = "#FFFF66",
+  "Somewhat Disagree" = "#FFA500",
+  "Strongly Disagree" = "#B22222"
+)
+
+# Define descriptive question labels
+response_labels <- c(
+  resp_safety = "Based on my understanding,\nI believe the vaccine is safe",
+  resp_confidence_science = "I am confident in the\nscientific vetting process\nfor the new COVID vaccines",
+  resp_feel_safe_at_work = "Getting the vaccine\nwill make me feel safer at work",
+  resp_will_recommend = "I will recommend the vaccine\nto family, friends,\nand community members",
+  resp_trust_info = "I trust the information that\nI have received about the vaccines",
+  resp_concern_safety = "I am concerned about the\nsafety and side effects\nof the vaccine"
+)
+
+# Prepare and summarize data
+likert_summary <- covid_survey %>%
+  pivot_longer(cols = starts_with("resp_"), names_to = "question", values_to = "response_value") %>%
+  filter(!is.na(response_value)) %>%
+  mutate(
+    response_label = factor(response_value, levels = 1:5, labels = likert_levels),
+    question = recode(question, !!!response_labels),
+    question = factor(question, levels = response_labels)
+  ) %>%
+  count(question, response_label, name = "n") %>%
+  group_by(question) %>%
+  mutate(pct = n / sum(n)) %>%
+  ungroup()
+
+# Create diverging version of the data
+likert_diverging <- likert_summary %>%
+  mutate(pct = if_else(response_label %in% likert_levels[1:2], -pct, pct))
+
+# Diverging bar plot
+diverging_plot <- ggplot(likert_diverging, aes(x = pct, y = fct_rev(question), fill = response_label)) +
+  geom_col(width = 0.7) +
+  scale_x_continuous(
+  breaks = seq(-0.75, 0.75, by = 0.25),
+  labels = scales::percent_format(accuracy = 1)
+  ) +
+  scale_fill_manual(values = likert_colors) +
+  labs(x = "Proportion of Responses", y = NULL) +
+  theme_minimal() +
+  theme(
+    legend.position = "top",
+    legend.text = element_text(size = 8),
+    legend.title = element_blank(),
+    legend.key.width = unit(0.3, "cm"),
+    legend.key.height = unit(0.3, "cm"),
+    legend.spacing.x = unit(0.3, "cm"),
+    plot.margin = margin(5, 5, 5, 5)
+  )
+
+# 100% stacked bar plot
+stacked_plot <- ggplot(likert_summary, aes(x = fct_rev(question), y = pct, fill = response_label)) +
+  geom_col(position = "fill", width = 0.7) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_fill_manual(values = likert_colors) +
+  labs(x = NULL, y = "Proportion of Responses") +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(5, 5, 5, 5)
+  )
+
+# Combine plots with shared legend
+(diverging_plot + stacked_plot) +
+  plot_layout(ncol = 2, widths = c(1.3, 1.3), guides = "collect") +
+  plot_annotation(
+    title = "What people had to say about COVID-19 Vaccines",
+    subtitle = "Interpreting the survey using a Diverging bar plot and a 100% bar plot",
+    theme = theme(plot.title = element_text(face = "bold", size = 16),
+                  plot.subtitle = element_text(size = 12),
+                  legend.position = "top")
+  )
+```
